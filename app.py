@@ -109,7 +109,7 @@ def get_counts():
         abort(400)
     data = request.json.get('url')
     url = data
-    print (url)
+    url = re.sub("https://|http://","",url)
     # form URL, id necessary
     if 'http://' not in url[:7]:
         url = 'http://' + url
