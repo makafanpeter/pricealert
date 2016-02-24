@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row">
+{% for product in products %}
+  <div class="col s4">
+    <div class="card">
+      <div class="card-image">
+        <img src ="{{product.imageUrl}}" alt=""  >
+      </div>
+      <div class="card-content">
+        <p >&#8358; {{product.price}} </p>
+      </div>
+      <div class="card-action">
+        <a  target="_blank" href="{{product.url}}">{{product.name}}</a>
+        <!-- <a href="#" class="right" title="Create Alert"> <i class="material-icons">add_alert</i></a> -->
+      </div>
+    </div>
+  </div>
+{% endfor %}
+</div>
+{% endblock %}

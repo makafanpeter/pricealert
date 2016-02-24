@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row">
+  <div class="col s12">
+     <div class="card-panel light-blue lighten-5"><p><i class="material-icons">info_outline</i> <span> Only <a href="http://www.jumia.com.ng" target="_blank">Jumia</a>, <a href="http://www.konga.com" target="_blank">Konga</a> and,<a href="http://traclist.com" target="_blank">Traclist</a> are currently supported
+    </span></p> </div>
+  </div>
+</div>
+<div class="row">
+  <form class="col s12" onsubmit="return false;">
+     <div class="row">
+       <div class="input-field col s6">
+        <input data-bind="value: url, valueUpdate: 'afterkeydown'"  type="url" id="url" name="url" class="validate">
+        <label data-error="wrong" data-success="right" for="url">Product URL</label>
+        <div class="right-align">
+         <button class="btn light-blue lighten-2" data-bind="click: crawlUrl"> Get Product </button>
+        </div>
+       </div>
+       <div class="col s6" data-bind="with: product">
+         <div class="card">
+           <div class="card-image">
+             <img data-bind="attr: { 'src': $data.imageUrl }"  >
+           </div>
+           <div class="card-content">
+             <p data-bind="text:'&#8358; '+ $data.price"> </p>
+           </div>
+           <div class="card-action">
+             <a data-bind="attr: { 'href': $data.url }, text:$data.name" target="_blank"></a>
+             <a data-bind="attr: { 'href': 'addalert/'+$data.id }, "class="right" title="Create Alert"> <i class="material-icons">add_alert</i></a>
+           </div>
+         </div>
+       </div>
+       <div class="col s6" data-bind="with:error" >
+         <div class="card-panel red accent-3" >
+            <p><i class="material-icons">error</i>Unable to get product. Please make sure it's valid product url and try again.</p>
+        </div>
+       </div>
+     </div>
+     <div class="row">
+       <div class="col s6" data-bind="with:loading" >
+         <div class="progress" >
+           <div class="indeterminate"></div>
+        </div>
+       </div>
+
+     </div>
+  </form>
+</div>
+{% endblock %}
