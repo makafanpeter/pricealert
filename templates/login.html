@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row">
+  <div class="col s4">
+    &nbsp;
+  </div>
+    <div class="col s4">
+      <div class="row">
+        <div class="col s12">
+          <p>
+          <button id="google" class="btn">
+          <span >
+             <i class="fa fa-google"></i>
+              <a class="white-text" href="{{ url_for('oauth_authorize', provider='google') }}">Login with Google</a>
+
+           </span>
+        </button>
+      </p>
+      </div>
+      </div>
+      <div class="row">
+        <div class="col s12">
+          <p>
+          <button id="facebook" class="btn">
+            <i class="fa fa-facebook-official"></i>
+              <a class="white-text" href="{{ url_for('oauth_authorize', provider='facebook') }}">Login with Facebook</a>
+
+        </button>
+        </p>
+      </div>
+        </div>
+      </div>
+    </div>
+      <div class="col s4">
+          &nbsp;
+      </div>
+</div>
+{% endblock %}

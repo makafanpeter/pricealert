@@ -1,4 +1,4 @@
-from flask import Flask,render_template, request, jsonify
+from flask import Flask,render_template, request, jsonify, url_for, redirect
 from flask.ext.sqlalchemy import SQLAlchemy
 import os
 import re
@@ -9,6 +9,8 @@ import string
 from rq import Queue
 from rq.job import Job
 from worker import conn
+from flask.ext.login import LoginManager, UserMixin, login_user, logout_user,current_user, login_required
+from oauth import OAuthSignIn
 
 
 
@@ -17,6 +19,8 @@ from worker import conn
 app = Flask(__name__)
 app.config.from_object(os.environ['APP_SETTINGS'])
 db = SQLAlchemy(app)
+lm = LoginManager(app)
+lm.login_view = 'login'
 
 task_queue = Queue(connection=conn)
 
@@ -26,6 +30,9 @@ from models import *
 ##########
 # helper #
 ##########
+
+
+
 def crawl_and_save(url):
     errors = []
     reg  =  re.compile(r'^(?:([A-Za-z]+):)?(\/{0,3})([0-9.\-A-Za-z]+)(?::(\d+))?(?:\/([^?#]*))?(?:\?([^#]*))?(?:#(.*))?$')
@@ -96,13 +103,24 @@ def crawl_and_save(url):
         )
     return {"error": errors}
 
+############
+# Flask    #
+###########
 
-@app.route('/', methods=['GET', 'POST'])
+@lm.user_loader
+def load_user(id):
+    return User.query.get(int(id))
+
+@app.route('/index')
+@app.route('/', methods=['GET'])
+@login_required
 def index():
+    print(current_user.username)
     return render_template('index.html')
 
 
 @app.route('/crawl', methods=['POST'])
+@login_required
 def get_counts():
     # get url
     if not request.json :
@@ -127,6 +145,7 @@ def list_deals():
 
 
 @app.route("/results/<job_key>", methods=['GET'])
+@login_required
 def get_results(job_key):
 
     job = Job.fetch(job_key, connection=conn)
@@ -138,6 +157,43 @@ def get_results(job_key):
         return jsonify(product.serialize)
     else:
         return "Nay!", 202
+
+
+
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for('login'))
+
+@app.route('/authorize/<provider>')
+def oauth_authorize(provider):
+    if not current_user.is_anonymous:
+        return redirect(url_for('index'))
+    oauth = OAuthSignIn.get_provider(provider)
+    return oauth.authorize()
+
+@app.route('/callback/<provider>')
+def oauth_callback(provider):
+    if not current_user.is_anonymous:
+        return redirect(url_for('index'))
+    oauth = OAuthSignIn.get_provider(provider)
+    social_id, username, email, picture = oauth.callback()
+    user = User.query.filter_by(email=email).first()
+    if not user:
+        user = User(username = username, picture = picture, email = email)
+        db.session.add(user)
+        membership = OAuthMembership(provider = provider, provider_userid = social_id, user_id = user.id)
+        db.session.add(membership)
+        db.session.commit()
+    login_user(user, True)
+    token = user.generate_auth_token(1600)
+    #return redirect(url_for('index', token = token))
+    return redirect(url_for('index'))
+
+@app.route('/login')
+def login():
+    return render_template('login.html')
 
 
 if __name__ == '__main__':

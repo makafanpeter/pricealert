@@ -1,5 +1,12 @@
 from app import db
 from sqlalchemy.orm import relationship
+from passlib.apps import custom_app_context as pwd_context
+import random, string
+from itsdangerous import(TimedJSONWebSignatureSerializer as Serializer, BadSignature, SignatureExpired)
+from flask.ext.login import UserMixin
+import datetime
+secret_key = ''.join(random.choice(string.ascii_uppercase + string.digits) for x in range(32))
+
 
 class Merchant(db.Model):
     __tablename__ = 'merchants'
@@ -105,3 +112,76 @@ class Product(db.Model):
             "price": self.price,
             "imageUrl": self.imageUrl
             }
+
+
+
+class User(UserMixin,db.Model):
+    __tablename__ = 'users'
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(32), index=True)
+    picture = db.Column(db.String)
+    email = db.Column(db.String)
+    password_hash = db.Column(db.String(64))
+
+    def __init__(self, username, picture, email  ):
+        self.username = username
+        self.picture = picture
+        self.email = email
+
+    def hash_password(self, password):
+        self.password_hash = pwd_context.encrypt(password)
+
+    def verify_password(self, password):
+        return pwd_context.verify(password, self.password_hash)
+    #Add a method to generate auth tokens here
+
+    def generate_auth_token(self, expiration=600):
+    	s = Serializer(secret_key, expires_in = expiration)
+    	return s.dumps({'id': self.id })
+
+    #Add a method to verify auth tokens here
+    @staticmethod
+    def verify_auth_token(token):
+    	s = Serializer(secret_key)
+    	try:
+    		data = s.loads(token)
+    	except SignatureExpired:
+    		#Valid Token, but expired
+    		return None
+    	except BadSignature:
+    		#Invalid Token
+    		return None
+    	user_id = data['id']
+    	return user_id
+
+    @property
+    def serialize(self):
+         """Return object data in easily serializeable format"""
+         return {
+            "id" : self.id,
+            "username": self.username,
+            "picture" : self.picture
+            }
+
+
+
+class OAuthMembership(db.Model):
+    """docstring for """
+    __tablename__ = 'oauthmemberships'
+    provider = db.Column(db.String(30), primary_key=True)
+    provider_userid =  db.Column(db.String(100), primary_key=True)
+    user_id =  db.Column(db.Integer,db.ForeignKey('users.id'))
+    user = relationship(User)
+
+    def __init__(self, provider , provider_userid , user_id):
+        self.provider = provider
+        self.provider_userid = provider_userid
+        self.user_id =  user_id
+
+    @property
+    def serialize(self):
+         """Return object data in easily serializeable format"""
+         return {
+         "provider" : self.provider,
+         "provideruserid": self.provider_userid
+         }

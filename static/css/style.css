@@ -1,0 +1,32 @@
+#nav-user-icon {
+    height: 45px;
+    width: 45px;
+    background: white;
+
+  }
+
+  #icon-container {
+    margin-bottom: 30px;
+    padding: 10px;
+}
+
+#nav-user-icon {
+    height: 45px;
+    width: 45px;
+}
+
+ #google{
+    border: none;
+    background-color: #dd4b39;
+    color: #fff;
+    text-transform: none;
+    text-align: left;
+}
+
+#facebook {
+    border: none;
+    background-color: #3c5a99;
+    color: #fff;
+    text-transform: none;
+    text-align: left;
+}
