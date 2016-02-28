@@ -4,7 +4,7 @@ from passlib.apps import custom_app_context as pwd_context
 import random, string
 from itsdangerous import(TimedJSONWebSignatureSerializer as Serializer, BadSignature, SignatureExpired)
 from flask.ext.login import UserMixin
-import datetime
+from datetime import datetime
 secret_key = ''.join(random.choice(string.ascii_uppercase + string.digits) for x in range(32))
 
 
@@ -184,4 +184,58 @@ class OAuthMembership(db.Model):
          return {
          "provider" : self.provider,
          "provideruserid": self.provider_userid
+         }
+
+
+class Alert(db.Model):
+    __tablename__ = "alerts"
+    id = db.Column(db.Integer, primary_key=True)
+    targetPrice = db.Column(db.Float)
+    currentPrice = db.Column(db.Float)
+    tweetAt = db.Column(db.String)
+    reachedTarget = db.Column(db.Boolean, default= False)
+    user_id =  db.Column(db.Integer,db.ForeignKey('users.id'))
+    product_id =  db.Column(db.Integer,db.ForeignKey('products.id'))
+    createdOn = db.Column(db.DateTime, default = datetime.now())
+    user = relationship(User)
+    product = relationship(Product)
+
+    def __init__(self, targetPrice, currentPrice,tweetAt, user_id, product_id ):
+        self.targetPrice = targetPrice
+        self.currentPrice = currentPrice
+        self.tweetAt = tweetAt
+        self.product_id = product_id
+        self.user_id =  user_id
+
+    @property
+    def serialize(self):
+         """Return object data in easily serializeable format"""
+         return {
+         "targetPrice" : self.targetPrice,
+         "currentPrice": self.currentPrice,
+         "createdOn": self.createdOn
+         }
+
+
+
+class AlertHistory(db.Model):
+    __tablename__ = "alerthistory"
+    """docstring for AlertHistory"""
+    id = db.Column(db.Integer, primary_key=True)
+    currentPrice = db.Column(db.Float)
+    createdOn = db.Column(db.DateTime, default = datetime.now())
+    alert_id =  db.Column(db.Integer,db.ForeignKey('alerts.id'))
+    alert = relationship(Alert)
+
+    def __init__(self, currentPrice, wishlist_id):
+        self.currentPrice = currentPrice
+        self.wishlist_id = wishlist_id
+
+    @property
+    def serialize(self):
+         """Return object data in easily serializeable format"""
+         return {
+         "currentPrice": self.currentPrice,
+         "createdOn": self.createdOn,
+         "alert_id": self.alert_id
          }

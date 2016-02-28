@@ -1,4 +1,4 @@
-from flask import Flask,render_template, request, jsonify, url_for, redirect
+from flask import Flask,render_template, request, jsonify, url_for, redirect, abort
 from flask.ext.sqlalchemy import SQLAlchemy
 import os
 import re
@@ -11,6 +11,7 @@ from rq.job import Job
 from worker import conn
 from flask.ext.login import LoginManager, UserMixin, login_user, logout_user,current_user, login_required
 from oauth import OAuthSignIn
+from sqlalchemy import  or_, and_
 
 
 
@@ -194,6 +195,47 @@ def oauth_callback(provider):
 @app.route('/login')
 def login():
     return render_template('login.html')
+
+
+@app.route('/createalert/<int:id>', methods=['POST'])
+@login_required
+def add_alert(id):
+    if not request.json :
+        abort(400)
+    user_id = current_user.id
+    targetPrice = float(request.json.get('targetPrice'))
+    tweetAt = request.json.get('tweetAt')
+    product = Product.query.filter_by(id=id).first()
+    if product:
+        #find existing Alert
+        alert = Alert.query.filter(and_(Alert.user_id == user_id, Alert.product_id == product.id)).first()
+        if alert:
+            alert.targetPrice = targetPrice
+            alert.tweetAt = tweetAt
+            alert.currentPrice = product.price
+        else:
+            alert = Alert( targetPrice = targetPrice, currentPrice = product.price,tweetAt = tweetAt, user_id = user_id, product_id = product.id )
+        try:
+             db.session.add(alert)
+             db.session.commit()
+             return  jsonify( { 'result': True }), 201
+        except Exception as e:
+                print(e)
+
+    return jsonify({"error": "Unable to create alert."}), 400
+
+@app.route('/myalerts', methods=['GET'])
+@login_required
+def my_alerts():
+    user_id = current_user.id
+    alerts = Alert.query.filter_by(user_id = user_id).all()
+    myAlerts =  []
+    for value in alerts:
+        product = value.product
+        alert = {"id":product.id,"productImage":product.imageUrl,"productName": product.name, "currentPrice": value.currentPrice, "targetPrice": value.targetPrice, "reachedTarget": value.reachedTarget }
+        myAlerts.append(alert)
+
+    return jsonify(alerts = myAlerts)
 
 
 if __name__ == '__main__':

@@ -1,49 +1,118 @@
-{% extends "base.html" %}
-{% block content %}
+{% extends "base.html" %} {% block content %}
 <div class="row">
   <div class="col s12">
-     <div class="card-panel light-blue lighten-5"><p><i class="material-icons">info_outline</i> <span> Only <a href="http://www.jumia.com.ng" target="_blank">Jumia</a>, <a href="http://www.konga.com" target="_blank">Konga</a> and,<a href="http://traclist.com" target="_blank">Traclist</a> are currently supported
-    </span></p> </div>
+    <div class="card-panel light-blue lighten-5">
+      <p><i class="material-icons">info_outline</i>
+        <span> Only <a href="http://www.jumia.com.ng" target="_blank">Jumia</a>, <a href="http://www.konga.com" target="_blank">Konga</a> and,<a href="http://traclist.com" target="_blank">Traclist</a> are currently supported
+        </span>
+      </p>
+    </div>
   </div>
 </div>
 <div class="row">
   <form class="col s12" onsubmit="return false;">
-     <div class="row">
-       <div class="input-field col s6">
-        <input data-bind="value: url, valueUpdate: 'afterkeydown'"  type="url" id="url" name="url" class="validate">
+    <div class="row">
+      <div class="input-field col s6">
+        <input data-bind="value: url, valueUpdate: 'afterkeydown'" type="url" id="url" name="url" class="validate">
         <label data-error="wrong" data-success="right" for="url">Product URL</label>
         <div class="right-align">
-         <button class="btn light-blue lighten-2" data-bind="click: crawlUrl"> Get Product </button>
+          <button class="btn light-blue lighten-2" data-bind="click: crawlUrl"> Get Product </button>
         </div>
-       </div>
-       <div class="col s6" data-bind="with: product">
-         <div class="card">
-           <div class="card-image">
-             <img data-bind="attr: { 'src': $data.imageUrl }"  >
-           </div>
-           <div class="card-content">
-             <p data-bind="text:'&#8358; '+ $data.price"> </p>
-           </div>
-           <div class="card-action">
-             <a data-bind="attr: { 'href': $data.url }, text:$data.name" target="_blank"></a>
-             <a data-bind="attr: { 'href': 'addalert/'+$data.id }, "class="right" title="Create Alert"> <i class="material-icons">add_alert</i></a>
-           </div>
-         </div>
-       </div>
-       <div class="col s6" data-bind="with:error" >
-         <div class="card-panel red accent-3" >
-            <p><i class="material-icons">error</i>Unable to get product. Please make sure it's valid product url and try again.</p>
+      </div>
+      <div class="col s6" data-bind="with: product">
+        <div class="card">
+          <div class="card-image">
+            <img data-bind="attr: { 'src': $data.imageUrl }">
+          </div>
+          <div class="card-content">
+            <p data-bind="text:'&#8358; '+ $data.price"> </p>
+          </div>
+          <div class="card-action">
+            <a data-bind="attr: { 'href': $data.url }, text:$data.name" target="_blank"></a>
+            <a class="right" title="Create Alert" data-bind="visible:! $root.productLoaded()"> <i class="material-icons" data-bind="click: $root.EnableAlert">add_alert</i></a>
+          </div>
         </div>
-       </div>
-     </div>
-     <div class="row">
-       <div class="col s6" data-bind="with:loading" >
-         <div class="progress" >
-           <div class="indeterminate"></div>
+      </div>
+      <div class="col s6" data-bind="with:error">
+        <div class="card-panel red accent-3">
+          <p><i class="material-icons">error</i>Unable to get product. Please make sure it's valid product url and try again.</p>
         </div>
-       </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col s6" data-bind="with:loading">
+        <div class="progress">
+          <div class="indeterminate"></div>
+        </div>
+      </div>
 
-     </div>
+    </div>
   </form>
+</div>
+<div class="row" data-bind="visible: productLoaded">
+  <div class="col s6">
+    &nbsp;
+  </div>
+  <div class="col s6">
+    <div class="card-panel row">
+      <div class="col s12 input-field">
+        <input data-bind="attr:{'min': $root.product()? $root.product().price + 1: 0}, value:$root.targetPrice" type="number" id="targetPrice" name="targetPrice" class="validate">
+        <label data-error="wrong" data-success="right" for="url">Target Price *</label>
+      </div>
+      <div class="col s12 input-field">
+        <input data-bind="value:$root.tweetAt" type="text" id="tweetAt" name="tweetAt" class="validate">
+        <label data-error="wrong" data-success="right" for="url">Tweet @</label>
+      </div>
+      <div class="col s6" data-bind="visible: !processingAlert()">
+        <button class="btn light-blue lighten-2" data-bind="click:createAlert"> Create </button>
+      </div>
+      <div class="col s6" data-bind="visible: processingAlert">
+        <div class="preloader-wrapper small active">
+          <div class="spinner-layer spinner-green-only">
+            <div class="circle-clipper left">
+              <div class="circle"></div>
+            </div>
+            <div class="gap-patch">
+              <div class="circle"></div>
+            </div>
+            <div class="circle-clipper right">
+              <div class="circle"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="row">
+  <div class="col s12">
+    <ul class="collection with-header z-depth-1">
+      <li class="collection-header">
+        <h4>My Alerts(
+          <span data-bind="text: $root.alerts().length"></span>)</h4>
+      </li>
+      <!-- ko foreach: $root.alerts -->
+      <li class="collection-item avatar">
+        <img data-bind="attr: { 'src': productImage , 'alt':productName}" alt="" class="circle">
+        <p>
+          <a href="#" data-bind="attr: { 'title':reachedTarget ? 'Product has reached target price':'Product has not reached target price'  }">
+            <span class="dot" data-bind="css:{ 'green' : reachedTarget, 'red':  !reachedTarget}"></span>
+          </a>
+          <span class="title" data-bind="text:productName"></span>
+        </p>
+        <p>Current Price:
+          <span data-bind="text:'&#8358; ' + currentPrice"> </span>
+        </p>
+        <p>Target Price:
+          <span data-bind="text:'&#8358; '+ targetPrice"> </span>
+        </p>
+        <br/>
+        <!-- <a data-bind="attr: { 'href': 'alert/'+ id }" class="secondary-content"><i class="material-icons">send</i></a> -->
+        <a data-bind="" class="secondary-content"><i class="material-icons">send</i></a>
+      </li>
+      <!-- /ko -->
+
+    </ul>
+  </div>
 </div>
 {% endblock %}
