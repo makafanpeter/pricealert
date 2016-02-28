@@ -90,9 +90,14 @@ def crawl_and_save(url):
                         product = Product.query.filter_by(name = product_name).first()
                         if not product:
                             product = Product( name= product_name, url = url,price = price_dec, imageUrl = imageUrl)
-                            print(product)
                             db.session.add(product)
                             db.session.commit()
+                        else:
+                            product.price = price_dec
+                            db.session.add(product)
+                        history = PriceHistory(currentPrice = price_dec, product_id = product.id)
+                        db.session.add(history)
+                        db.session.commit()
                         return product.id
                     except Exception as e:
                           print (e)
@@ -182,11 +187,15 @@ def oauth_callback(provider):
     social_id, username, email, picture = oauth.callback()
     user = User.query.filter_by(email=email).first()
     if not user:
-        user = User(username = username, picture = picture, email = email)
-        db.session.add(user)
-        membership = OAuthMembership(provider = provider, provider_userid = social_id, user_id = user.id)
-        db.session.add(membership)
-        db.session.commit()
+        try:
+            user = User(username = username, picture = picture, email = email)
+            db.session.add(user)
+            db.session.commit()
+            membership = OAuthMembership(provider = provider, provider_userid = social_id, user_id = user.id)
+            db.session.add(membership)
+            db.session.commit()
+        except Exception as e:
+            print (e)
     login_user(user, True)
     token = user.generate_auth_token(1600)
     #return redirect(url_for('index', token = token))

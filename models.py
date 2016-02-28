@@ -239,3 +239,27 @@ class AlertHistory(db.Model):
          "createdOn": self.createdOn,
          "alert_id": self.alert_id
          }
+
+
+
+class PriceHistory(db.Model):
+    __tablename__ = "pricehistory"
+    """docstring for PriceHistory"""
+    id = db.Column(db.Integer, primary_key=True)
+    currentPrice = db.Column(db.Float)
+    createdOn = db.Column(db.DateTime, default = datetime.now())
+    product_id =  db.Column(db.Integer,db.ForeignKey('products.id'))
+    product = relationship(Product)
+
+    def __init__(self, currentPrice, product_id):
+        self.currentPrice = currentPrice
+        self.product_id = product_id
+
+    @property
+    def serialize(self):
+         """Return object data in easily serializeable format"""
+         return {
+         "currentPrice": self.currentPrice,
+         "createdOn": self.createdOn,
+         "product_id": self.product_id
+         }
