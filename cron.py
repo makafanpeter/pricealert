@@ -53,6 +53,6 @@ def scheduled_job():
                 print(e)
 
 
-job = scheduler.add_job(scheduled_job, 'interval', minutes=2, id='price_alerts_cron', replace_existing=True)
+job = scheduler.add_job(scheduled_job, 'interval', minutes=120, id='price_alerts_cron', replace_existing=True)
 
 scheduler.start()
