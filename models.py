@@ -229,7 +229,7 @@ class AlertHistory(db.Model):
 
     def __init__(self, currentPrice, wishlist_id):
         self.currentPrice = currentPrice
-        self.wishlist_id = wishlist_id
+        self.alert_id = wishlist_id
 
     @property
     def serialize(self):
