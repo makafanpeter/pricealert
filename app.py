@@ -94,11 +94,11 @@ def crawl(url):
 def crawl_and_save(url):
     errors = []
     try:
-        product = crawl(url)
-        if type(product) == Product:
-            product = Product.query.filter_by(name=product.name).first()
+        newproduct = crawl(url)
+        if type(newproduct) == Product:
+            product = Product.query.filter_by(name=newproduct.name).first()
             if not product:
-                product = Product(name=product.name, url=url, price=product.price, imageUrl=product.imageUrl)
+                product = Product(name=newproduct.name, url=url, price=newproduct.price, imageUrl=newproduct.imageUrl)
                 db.session.add(product)
                 db.session.commit()
             else:
