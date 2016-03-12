@@ -3,11 +3,15 @@ from apscheduler.jobstores.redis import RedisJobStore
 from message import *
 from app import db, crawl
 from models import *
+import  os
+from urllib.parse import urlparse
 
+
+redis_url = os.getenv('REDISTOGO_URL', 'redis://localhost:6379')
+url = urlparse(redis_url)
 jobstores = {
-    'default': RedisJobStore(host='127.0.0.1', port=6379)
+    'default': RedisJobStore(host=url.hostname, port=url.port, password=url.password)
 }
-
 scheduler = BlockingScheduler(jobstores=jobstores)
 
 
