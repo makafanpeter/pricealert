@@ -257,11 +257,30 @@ def my_alerts():
         product = value.product
         alert = {"id": product.id, "productImage": product.imageUrl, "productName": product.name,
                  "currentPrice": value.currentPrice, "targetPrice": value.targetPrice,
-                 "reachedTarget": value.reachedTarget}
+                 "reachedTarget": value.reachedTarget, "alertId": value.id}
         myAlerts.append(alert)
 
     return jsonify(alerts=myAlerts)
 
+@app.route('/alert/<int:id>', methods=['GET'])
+@login_required
+def get_alert(id):
+    user_id = current_user.id
+    alert = Alert.query.filter_by(id=id).first()
+    if alert and alert.user_id == user_id:
+        return render_template('alert.html', alert=alert, product=alert.product)
+    return redirect(url_for('index'))
+
+@app.route('/alerthistory/<int:id>', methods=['GET'])
+@login_required
+def get_alerthistory(id):
+    user_id = current_user.id
+    alert = Alert.query.filter_by(id=id).first()
+    history = []
+    if alert and alert.user_id == user_id:
+       alerthistory =  AlertHistory.query.filter_by(alert_id=id).all()
+       history = [h.serialize for h in alerthistory]
+    return jsonify(history=history)
 
 if __name__ == '__main__':
     app.run(threaded=True,

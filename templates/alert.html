@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row">
+<div class="col s8">
+    <div class="card">
+      <div class="card-content">
+          <p>Target Price</p>
+        <h1 >&#8358; {{alert.targetPrice}} </h1>
+          <p>Current Price</p>
+        <h1 >&#8358; {{alert.currentPrice}} </h1>
+      </div>
+    </div>
+  </div>
+<div class="col s4">
+    <div class="card">
+      <div class="card-image">
+        <img src ="{{product.imageUrl}}" alt=""  >
+      </div>
+      <div class="card-content">
+        <p >&#8358; {{product.price}} </p>
+      </div>
+      <div class="card-action">
+        <a  target="_blank" href="{{product.url}}">{{product.name}}</a>
+
+      </div>
+    </div>
+  </div>
+
+</div>
+    <div class="row">
+    <div class="col s12">
+    <div class="card">
+      <div class="card-content" id="linegraph">
+
+      </div>
+    </div>
+  </div>
+    </div>
+{% endblock %}
