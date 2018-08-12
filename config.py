@@ -8,16 +8,16 @@ class Config(object):
     SQLALCHEMY_DATABASE_URI = os.environ['DATABASE_URL']
     OAUTH_CREDENTIALS =  {
     'facebook': {
-          'id': '939475312801278',
-          'secret': '33a13a651e8a0ccbbfd795b2a719bc92'
+          'id': '',
+          'secret': ''
       },
       'google': {
-          'id': '402931892293-hjcvg51uh811gqn5acbp88465rootr88.apps.googleusercontent.com',
-          'secret': 'KpRBJvLLF-jwObxvy0zDPWDc'
+          'id': '',
+          'secret': ''
       },
       'twitter': {
-          'id': '3RzWQclolxWZIMq5LJqzRZPTl',
-          'secret': 'm9TEd58DSEtRrZHpz2EjrV9AhsBRxKMo8m3kuIZj3zLwzwIimt'
+          'id': '',
+          'secret': ''
       },
 }
 
